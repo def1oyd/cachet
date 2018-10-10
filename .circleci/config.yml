@@ -1,0 +1,47 @@
+version: 2
+jobs:
+  build:
+    working_directory: /app
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Clone the source repository
+          command: |
+            set +o pipefail
+            git clone https://github.com/CachetHQ/Docker
+      - run:
+          name: Build the Image
+          command: |
+            set +o pipefail
+            VERSION="$(cat VERSION)"
+            TAG="${VERSION}-nightly-$(date '+%Y%m%d')"
+            echo $TAG > TAG
+            cd Docker
+            docker build --build-arg cachet_ver=${VERSION} -t floydev/cachet:${TAG} .
+      - run:
+          name: Push the Image
+          command: |
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+            TAG="$(cat TAG)"
+            docker push floydev/cachet:${TAG}
+workflows:
+  version: 2
+  build_pipeline:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build
