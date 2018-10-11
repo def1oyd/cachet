@@ -39,7 +39,7 @@ checkdbinitmysql() {
         echo "Table ${DB_PREFIX}${table} exists! ..."
     else
         echo "Table ${DB_PREFIX}${table} does not exist! ..."
-        init_db
+        migrate_db true
     fi
 
 }
@@ -51,7 +51,7 @@ checkdbinitpsql() {
         echo "Table ${DB_PREFIX}${table} exists! ..."
     else
         echo "Table ${DB_PREFIX}${table} does not exist! ..."
-        init_db
+        migrate_db true
     fi
 
 }
@@ -200,18 +200,14 @@ initialize_system() {
   rm -rf bootstrap/cache/*
 }
 
-init_db() {
-  echo "Initializing Cachet database ..."
-  php artisan app:install
-  check_configured
-}
-
 migrate_db() {
+  echo "Migrating Cachet database ..."
   force=""
-  if [[ "${FORCE_MIGRATION:-false}" == true ]]; then
+  if [[ "${1:-false}" == true ]]; then
     force="--force"
   fi
   php artisan migrate ${force}
+  check_configured
 }
 
 start_system() {
@@ -221,6 +217,10 @@ start_system() {
   migrate_db
   echo "Starting Cachet! ..."
   php artisan config:cache
+  php artisan route:cache
+  php artisan vendor:publish --all
+  php artisan cache:clear
+  php artisan storage:link
   /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
 }
 
