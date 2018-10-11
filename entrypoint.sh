@@ -72,7 +72,7 @@ initialize_system() {
 
   APP_KEY=${APP_KEY:-}
   APP_ENV=${APP_ENV:-development}
-  APP_DEBUG=${APP_DEBUG:-true}
+  APP_DEBUG=false
   APP_URL=${APP_URL:-http://localhost}
   APP_LOG=${APP_LOG:-errorlog}
 
