@@ -11,7 +11,7 @@ ARG archive_url
 ENV cachet_ver ${cachet_ver:-master}
 ENV archive_url ${archive_url:-https://github.com/cachethq/Cachet/archive/${cachet_ver}.tar.gz}
 
-ENV COMPOSER_VERSION 1.6.3
+ENV COMPOSER_VERSION 1.7.2
 
 RUN apk add --no-cache --update \
     postgresql-client \
