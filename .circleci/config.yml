@@ -8,18 +8,12 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Clone the source repository
-          command: |
-            set +o pipefail
-            git clone https://github.com/CachetHQ/Docker
-      - run:
           name: Build the Image
           command: |
             set +o pipefail
             VERSION="$(cat VERSION)"
             TAG="${VERSION}-nightly-$(date '+%Y%m%d')"
             echo $TAG > TAG
-            cd Docker
             docker build --build-arg cachet_ver=${VERSION} -t floydev/cachet:${TAG} .
       - run:
           name: Push the Image
