@@ -1,0 +1,84 @@
+version: "3.6"
+services:
+  cachet:
+    container_name: cachet
+    image: floydev/cachet:2.4-nightly-latest
+    ports:
+      - "62217:8000"
+    environment:
+      # APP_ENV: "production"
+      APP_ENV: "development"
+      APP_URL: "http://localhost:62217"
+      APP_LOG: "errorlog"
+      # Get it from `docker logs cachet -f` after first run
+      # APP_KEY: "base64:xxxxxx"
+      DB_DRIVER: "pgsql"
+      CACHE_DRIVER: "apc"
+      QUEUE_DRIVER: "database"
+      # Only "file" works for session driver
+      SESSION_DRIVER: "file"
+      # No port here if your host has port
+      SESSION_DOMAIN: "localhost"
+      # Set it to true if you use https
+      SESSION_SECURE_COOKIE: "false"
+      CACHET_EMOJI: "true"
+      CACHET_AUTO_TWITTER: "false"
+      DB_HOST: "postgres"
+      DB_PORT: 5432
+      DB_USERNAME: "cachet"
+      DB_PASSWORD: "Jdqp79jSz3cFdmjV"
+      DB_DATABASE: "cachet"
+      MAIL_HOST: "mailhog"
+      MAIL_PORT: 1025
+      MAIL_ADDRESS: "status@cachet.dev"
+      MAIL_NAME: "cachet"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: ""
+    restart: on-failure
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: cachet-postgres
+    image: postgres:11-alpine
+    expose:
+      - "5432"
+    volumes:
+      - ./.volumes/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "cachet"
+      POSTGRES_PASSWORD: "Jdqp79jSz3cFdmjV"
+      POSTGRES_DB: "cachet"
+      POSTGRES_ENCODING: "UTF8"
+      POSTGRES_COLLATE: "C"
+      POSTGRES_COLLATE_TYPE: "C"
+    restart: on-failure
+
+  pgweb:
+    container_name: cachet-pgweb
+    image: sosedoff/pgweb
+    command: /usr/bin/pgweb --bind=0.0.0.0 --listen=8081
+    ports:
+      - "62218:8081"
+    environment:
+      DATABASE_URL: "postgres://cachet:Jdqp79jSz3cFdmjV@postgres:5432/cachet?sslmode=disable"
+    restart: on-failure
+    depends_on:
+      - postgres
+
+  mailhog:
+    container_name: cachet-mailhog
+    image: mailhog/mailhog:v1.0.0
+    expose:
+      - "1025"
+    ports:
+      - "62219:8025"
+    volumes:
+      - ./.volumes/mailhog:/mails
+    environment:
+      MH_CORS_ORIGIN: "true"
+      MH_HOSTNAME: "cachet.dev"
+      MH_MAILDIR_PATH: "/mails"
+      MH_STORAGE: "maildir"
+    restart: on-failure
