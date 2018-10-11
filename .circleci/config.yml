@@ -11,16 +11,21 @@ jobs:
           name: Build the Image
           command: |
             set +o pipefail
-            VERSION="$(cat VERSION)"
-            TAG="${VERSION}-nightly-$(date '+%Y%m%d')"
-            echo $TAG > TAG
-            docker build --build-arg cachet_ver=${VERSION} -t floydev/cachet:${TAG} .
+            CACHET_VERSION="$(cat VERSION)"
+            NIGHTLY_TAG="${CACHET_VERSION}-nightly-$(date '+%Y%m%d')"
+            NIGHTLY_LATEST_TAG="${CACHET_VERSION}-nightly-latest"
+            echo $NIGHTLY_TAG > NIGHTLY_TAG
+            echo $NIGHTLY_LATEST_TAG > NIGHTLY_LATEST_TAG
+            docker build --build-arg cachet_ver=${CACHET_VERSION} -t floydev/cachet:${NIGHTLY_TAG} .
+            docker tag floydev/cachet:${NIGHTLY_TAG} floydev/cachet:${NIGHTLY_LATEST_TAG}
       - run:
           name: Push the Image
           command: |
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-            TAG="$(cat TAG)"
-            docker push floydev/cachet:${TAG}
+            NIGHTLY_TAG="$(cat NIGHTLY_TAG)"
+            NIGHTLY_LATEST_TAG="$(cat NIGHTLY_LATEST_TAG)"
+            docker push floydev/cachet:${NIGHTLY_TAG}
+            docker push floydev/cachet:${NIGHTLY_LATEST_TAG}
 workflows:
   version: 2
   build_pipeline:
